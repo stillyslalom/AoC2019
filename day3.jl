@@ -1,4 +1,4 @@
-using DelimitedFiles, SparseArrays
+using DelimitedFiles
 
 function tracewires(input)
     path_x, path_y = [StepRange(0:0)], [StepRange(0:0)] # init w/ dummy wires
