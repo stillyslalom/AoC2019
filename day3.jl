@@ -23,28 +23,30 @@ function tracewires(input)
     return path_x, path_y
 end
 
-function wirecrosses(w1, w2)
+function crosscheck(x1::T, y1::T, x2::T, y2::T) where T <: AbstractRange
+    (minimum(x1) <= maximum(x2)) && (minimum(x2) <= maximum(x1)) || return false
+    (minimum(y1) <= maximum(y2)) && (minimum(y2) <= maximum(y1)) || return false
+    return true
+end
+
+@inbounds function wirecrosses(w1, w2)
     x1, y1 = tracewires(w1)
     x2, y2 = tracewires(w2)
-    w1len = 0 # wire 1 length accumulator
+    w1len = cumsum([length(x1[i]) + length(y1[i]) - 2 for i in eachindex(x1)])
+    w2len = cumsum([length(x2[j]) + length(y2[j]) - 2 for j in eachindex(x2)])
     intersections = Vector{Tuple{Int,Int}}()
     sumlen = Int[]
-    for i in eachindex(x1)
-        w2len = 0 # wire 2 length accumulator
-        for j in eachindex(x2)
+    for i in eachindex(x1), j in eachindex(x2)
+        if crosscheck(x1[i], y1[i], x2[j], y2[j])
             intx = x1[i] ∩ x2[j]
             inty = y1[i] ∩ y2[j]
-            if length(intx) > 0 && length(inty) > 0
-                for x in intx, y in inty
-                    w1_intlen = abs(x - x1[i][1]) + abs(y - y1[i][1])
-                    w2_intlen = abs(x - x2[j][1]) + abs(y - y2[j][1])
-                    push!(sumlen, w1len + w2len + w1_intlen + w2_intlen)
-                    push!(intersections, (x, y))
-                end
+            for x in intx, y in inty
+                w1_intlen = abs(x - x1[i][1]) + abs(y - y1[i][1])
+                w2_intlen = abs(x - x2[j][1]) + abs(y - y2[j][1])
+                push!(sumlen, w1len[i] + w2len[j] + w1_intlen + w2_intlen)
+                push!(intersections, (x, y))
             end
-            w2len += length(x2[j]) + length(y2[j]) - 2
         end
-        w1len += length(x1[i]) + length(y1[i]) - 2
     end
     return intersections, sumlen
 end
@@ -59,4 +61,4 @@ function day3(input)
 end
 
 input = readdlm(joinpath(@__DIR__, "day3_input.txt"))
-day3(input)
+@time day3(input)
