@@ -1,20 +1,20 @@
 using DelimitedFiles, OffsetArrays, StaticArrays
 
 getarg(input, mode, ptr, idx::Int) = mode[idx] == 0 ? input[input[ptr+idx]] : input[ptr+idx]
-getarg(input, mode, ptr, idxs) = [getarg(input, mode, ptr, idx) for idx in idxs]
+getargs(input, mode, ptr, idxs) = [getarg(input, mode, ptr, idx) for idx in idxs]
 
 function add!(input, mode, ptr)
-    input[input[ptr+3]] = sum(getarg(input, mode, ptr, 1:2))
+    input[input[ptr+3]] = sum(getargs(input, mode, ptr, 1:2))
     ptr += 4
 end
 
 function mul!(input, mode, ptr)
-    input[input[ptr+3]] = prod(getarg(input, mode, ptr, 1:2))
+    input[input[ptr+3]] = prod(getargs(input, mode, ptr, 1:2))
     ptr += 4
 end
 
 function inp!(input, mode, ptr)
-    input[getarg(input, mode, ptr, 1)] = 5 #parse(Int, Base.prompt("Input: "))
+    input[input[ptr+1]] = parse(Int, Base.prompt("Input"))
     ptr += 2
 end
 
@@ -24,21 +24,23 @@ function outp!(input, mode, ptr)
 end
 
 function jit!(input, mode, ptr)
-    getarg(input, mode, ptr, 1) != 0 ? getarg(input, mode, ptr, 2) : ptr + 3
+    arg1, arg2 = getargs(input, mode, ptr, 1:2)
+    arg1 != 0 ? arg2 : ptr + 3
 end
 
-function jit!(input, mode, ptr)
-    getarg(input, mode, ptr, 1) == 0 ? getarg(input, mode, ptr, 2) : ptr + 3
+function jif!(input, mode, ptr)
+    arg1, arg2 = getargs(input, mode, ptr, 1:2)
+    arg1 == 0 ? arg2 : ptr + 3
 end
 
 function lt!(input, mode, ptr)
-    arg1, arg2 = getarg(input, mode, ptr, 1:2)
+    arg1, arg2 = getargs(input, mode, ptr, 1:2)
     input[input[ptr+3]] = arg1 < arg2 ? 1 : 0
     ptr += 4
 end
 
-function lt!(input, mode, ptr)
-    arg1, arg2 = getarg(input, mode, ptr, 1:2)
+function eq!(input, mode, ptr)
+    arg1, arg2 = getargs(input, mode, ptr, 1:2)
     input[input[ptr+3]] = arg1 == arg2 ? 1 : 0
     ptr += 4
 end
