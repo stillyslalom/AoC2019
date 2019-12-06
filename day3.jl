@@ -61,4 +61,4 @@ function day3(input)
 end
 
 input = readdlm(joinpath(@__DIR__, "day3_input.txt"))
-@time day3(input)
+@btime day3($input)
